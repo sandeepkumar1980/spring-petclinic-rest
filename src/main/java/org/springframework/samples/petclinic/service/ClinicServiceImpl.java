@@ -16,6 +16,7 @@
 package org.springframework.samples.petclinic.service;
 
 import java.util.Collection;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -25,12 +26,14 @@ import org.springframework.orm.ObjectRetrievalFailureException;
 import org.springframework.samples.petclinic.model.Owner;
 import org.springframework.samples.petclinic.model.Pet;
 import org.springframework.samples.petclinic.model.PetType;
+import org.springframework.samples.petclinic.model.Schedule;
 import org.springframework.samples.petclinic.model.Specialty;
 import org.springframework.samples.petclinic.model.Vet;
 import org.springframework.samples.petclinic.model.Visit;
 import org.springframework.samples.petclinic.repository.OwnerRepository;
 import org.springframework.samples.petclinic.repository.PetRepository;
 import org.springframework.samples.petclinic.repository.PetTypeRepository;
+import org.springframework.samples.petclinic.repository.ScheduleRepository;
 import org.springframework.samples.petclinic.repository.SpecialtyRepository;
 import org.springframework.samples.petclinic.repository.VetRepository;
 import org.springframework.samples.petclinic.repository.VisitRepository;
@@ -45,7 +48,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Vitaliy Fedoriv
  */
 @Service
-
 public class ClinicServiceImpl implements ClinicService {
 
     private PetRepository petRepository;
@@ -54,6 +56,7 @@ public class ClinicServiceImpl implements ClinicService {
     private VisitRepository visitRepository;
     private SpecialtyRepository specialtyRepository;
 	private PetTypeRepository petTypeRepository;
+	private ScheduleRepository scheduleRepository;
 
     @Autowired
      public ClinicServiceImpl(
@@ -62,13 +65,16 @@ public class ClinicServiceImpl implements ClinicService {
     		 OwnerRepository ownerRepository,
     		 VisitRepository visitRepository,
     		 SpecialtyRepository specialtyRepository,
-			 PetTypeRepository petTypeRepository) {
+			 PetTypeRepository petTypeRepository,
+			 ScheduleRepository scheduleRepository
+			) {
         this.petRepository = petRepository;
         this.vetRepository = vetRepository;
         this.ownerRepository = ownerRepository;
         this.visitRepository = visitRepository;
         this.specialtyRepository = specialtyRepository; 
 		this.petTypeRepository = petTypeRepository;
+	    this.scheduleRepository = scheduleRepository;
     }
 
 	@Override
@@ -106,6 +112,19 @@ public class ClinicServiceImpl implements ClinicService {
 	@Transactional
 	public void deleteVisit(Visit visit) throws DataAccessException {
 		visitRepository.delete(visit);
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Collection<Schedule> findAllSchedules() throws DataAccessException {
+		return scheduleRepository.findAll();
+	}
+	
+	@Override
+	@Transactional
+	public void saveSchedule(Schedule schedule) throws DataAccessException {
+		scheduleRepository.save(schedule);
+		
 	}
 
 	@Override
@@ -283,6 +302,12 @@ public class ClinicServiceImpl implements ClinicService {
 	@Transactional(readOnly = true)
 	public Collection<Visit> findVisitsByPetId(int petId) {
 		return visitRepository.findByPetId(petId);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Collection<Schedule> findSchedulesByVetId(int vetId,Date date,String status, int time) {
+		return scheduleRepository.findByVetId(vetId,date,status,time);
 	}
 	
 	
